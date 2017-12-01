@@ -1,0 +1,6 @@
+WITH Productlines AS(
+SELECT DISTINCT productName, productLine FROM products ORDER BY productLine
+), ProductLines2 AS (SELECT ;productName FROM products)
+SELECT * FROM productlines2 WHERE ProductName LIKE '1960%';
+
+-- What was the most sold product in 2003?

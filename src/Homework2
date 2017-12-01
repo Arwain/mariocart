@@ -1,0 +1,125 @@
+/* *** Homework 2: Question 1 (ak99, alvin3) *** */
+CREATE DATABASE HOMEWORK_2;
+USE HOMEWORK_2;
+CREATE TABLE Employee (
+  EmployeeId   INT PRIMARY KEY
+  ,
+  FirstName    VARCHAR(25)
+  ,
+  LastName     VARCHAR(25)
+  ,
+  Gender       VARCHAR(1)
+  ,
+  ManagerId    INT
+  ,
+  EmailAddress VARCHAR(76)
+);
+
+/* *** Homework 2: Question 2 (ak99, alvin3) *** */
+USE HOMEWORK_2;
+CREATE TABLE Transcript (
+  TranscriptId INT PRIMARY KEY AUTO_INCREMENT
+  ,
+  EmployeeId   INT NOT NULL
+  ,
+  ClassId      INT NOT NULL
+  ,
+  Status       VARCHAR(25)
+);
+
+/* *** Homework 2: Question 3 (ak99, alvin3) *** */
+USE HOMEWORK_2;
+DROP TABLE Class;
+CREATE TABLE Class (
+  ClassId      INT AUTO_INCREMENT
+  ,
+  Name         VARCHAR(255)
+  ,
+  InstructorId INT
+  ,
+  TotalHours   INT
+  ,
+  PRIMARY KEY (ClassId)
+);
+ALTER TABLE Class
+  AUTO_INCREMENT = 1001;
+
+/* *** Homework 2: Question 4 (ak99, alvin3) *** */
+ALTER TABLE Class
+  CHANGE TotalHours CreditHours INT;
+
+/* *** Homework 2: Question 5 (ak99, alvin3) *** */
+INSERT INTO Employee VALUES (106, 'Petrina', 'Tillman', 'F', NULL, 'Petrina.Tillman@compnay.com');
+INSERT INTO Employee VALUES (112, 'Alec', 'Wilhoit', 'M', 106, 'Alec.Wilhoit@compnay.com');
+INSERT INTO Employee VALUES (117, 'Lourie', 'Johns', 'F', 106, 'Lourie.Johns@compnay.com');
+INSERT INTO Employee VALUES (119, 'Florencio', 'Chaves', 'M', 112, 'Florencio.Chaves@compnay.com');
+INSERT INTO Employee VALUES (122, 'Tanya', 'Vanasse', 'F', 112, 'Tanya.Vanasse@compnay.com');
+INSERT INTO Employee VALUES (127, 'Chana', 'Thorman', 'F', 112, 'Chana.Thorman @compnay.com');
+INSERT INTO Employee VALUES (139, 'Geoffrey', 'Sjorgren', 'M', 117, 'Geoffrey.Sjorgren@compnay.com');
+INSERT INTO Employee VALUES (140, 'Gorardo', 'Borrego', 'M', 117, 'Gorardo.Borrego@compnay.com');
+INSERT INTO Employee VALUES (142, 'Blain', 'Wishon', 'M', 117, 'Blain.Wishon@compnay.com');
+INSERT INTO Employee VALUES (150, 'Danita', 'Lansford', 'F', 122, 'Danita.Lansford@compnay.com');
+
+INSERT INTO Class VALUES (1001, "Customer Service 101", 119, 10);
+INSERT INTO Class VALUES (1002, "Synergy For Dummies", 119, 20);
+INSERT INTO Class VALUES (1003, "Conflict Management", 112, 10);
+INSERT INTO Class VALUES (1004, "Building Relationships", 117, 25);
+INSERT INTO Class VALUES (1005, "Management Essentials", 112, 40);
+INSERT INTO Class VALUES (1006, "Office Synergy", 117, 10);
+INSERT INTO Class VALUES (1007, "How to Succeed", 112, 10);
+INSERT INTO Class VALUES (NULL, "How to Succeed", 112, 10);
+
+INSERT INTO Transcript VALUES (NULL, 106, 1005, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 106, 1002, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 106, 1003, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 112, 1003, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 112, 1001, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 117, 1001, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 117, 1002, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 127, 1001, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 127, 1002, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 127, 1003, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 139, 1004, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 139, 1006, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 142, 1003, "COMPLETED");
+INSERT INTO Transcript VALUES (NULL, 142, 1005, "REGISTERED");
+INSERT INTO Transcript VALUES (NULL, 150, 1005, "COMPLETED");
+
+/* *** Homework 2: Question 6 (ak99, alvin3) *** */
+SELECT
+  C.Name,
+  E.FirstName,
+  E.LastName,
+  E.Gender
+FROM Employee E
+  JOIN Transcript T
+    ON E.EmployeeId = T.EmployeeId
+  INNER JOIN Class C
+    ON C.ClassId = T.ClassId
+WHERE C.Name LIKE '%Management%' OR C.Name LIKE '%Synergy%';
+
+/* *** Homework 2: Question 7 (ak99, alvin3) *** */
+SELECT
+  C.ClassId,
+  C.Name,
+  COUNT(T.ClassId) AS "Number of Employees"
+FROM Transcript T
+  JOIN Employee E
+    ON T.EmployeeId = E.EmployeeId
+  RIGHT JOIN Class C
+    ON T.ClassId = C.ClassId
+GROUP BY T.ClassId
+ORDER BY COUNT(T.ClassId) DESC;
+
+/* *** Homework 2: Question 8 (ak99, alvin3) *** */
+SELECT L.Name, sum(HC) AS "HoursCompleted", sum(HR) as "HoursRegistered"
+FROM (SELECT CONCAT(E.LastName,', ',E.FirstName) AS Name,
+       IFNULL((CASE WHEN Status = 'COMPLETED' THEN SUM(TotalHours)END), 0) AS 'HC',
+       IFNULL((CASE WHEN Status = 'REGISTERED' THEN SUM(TotalHours)END),0)  AS 'HR'
+FROM Employee E
+  NATURAL LEFT OUTER JOIN (Transcript T
+    JOIN Class C
+      ON T.ClassId = C.ClassId)
+GROUP BY E.EmployeeId, T.Status, Name
+ORDER BY E.LastName) AS L
+GROUP BY Name;
